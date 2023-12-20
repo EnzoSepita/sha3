@@ -13,10 +13,11 @@ round_constants = [
 def keccak_256(message):
     # Étape 1: Initialisation du tableau d'état
     state = [[0] * 5 for _ in range(5)]
+    print(state)
     
     # Étape 2: Remplissage du message
     message_bits = bitarray(endian='big')
-    message_bits.frombytes(message.encode('utf-8'))
+    message_bits.frombytes(message)
     
     # Étape 3: Ajout du padding
     message_length = len(message_bits)  # Obtenez la longueur actuelle du message en bits
@@ -27,8 +28,11 @@ def keccak_256(message):
     block_size = 1600
     for i in range(0, len(message_bits), block_size):
         block = message_bits[i:i+block_size]
-        state_xor(block, state)
-        keccak_f(state)
+    taille=len(block)
+    if len(block) > block_size:
+        raise ValueError("Block size mismatch")
+    state_xor(block, state)
+    keccak_f(state)
     
     # Étape 6: Troncature
     hash_bits = bitarray()
@@ -55,7 +59,8 @@ def calculate_padding(message_length):
 
 def state_xor(block, state):
     for i in range(len(block)):
-        state[i // 5][i % 5] ^= block[i]
+        row, col = divmod(i, 5)
+        state[row][col] ^= block[i]
 
 def keccak_f(state):
     for round in range(24):  # 24 rounds pour Keccak-256
