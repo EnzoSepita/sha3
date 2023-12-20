@@ -1,23 +1,20 @@
 from bitarray import bitarray
 import sys
+from operator import xor
 
 round_constants = [
-    0x0000000000000001, 0x0000000000008082, 0x800000000000808A, 0x8000000080008000,
-    0x000000000000808B, 0x0000000080000001, 0x8000000080008081, 0x8000000000008009,
-    0x000000000000008A, 0x0000000000000088, 0x0000000080008009, 0x000000008000000A,
-    0x000000008000808B, 0x800000000000008B, 0x8000000000008089, 0x8000000000008003,
-    0x8000000000008002, 0x8000000000000080, 0x000000000000800A, 0x800000008000000A,
-    0x8000000080008081, 0x8000000000008080, 0x0000000080000001
+    0x0000000000000001,   0x0000000000008082,   0x800000000000808A,   0x8000000080008000,
+  0x000000000000808B,   0x0000000080000001,   0x8000000080008081,   0x8000000000008009,
+  0x000000000000008A,   0x0000000000000088,   0x0000000080008009,   0x000000008000000A,
+  0x000000008000808B,   0x800000000000008B,   0x8000000000008089,   0x8000000000008003,
+  0x8000000000008002,   0x8000000000000080,   0x000000000000800A,   0x800000008000000A,
+  0x8000000080008081,   0x8000000000008080,   0x0000000080000001,   0x8000000080008008
 ]
 
-def keccak_256(message):
+def keccak_256(message_bits):
     # Étape 1: Initialisation du tableau d'état
     state = [[0] * 5 for _ in range(5)]
     print(state)
-    
-    # Étape 2: Remplissage du message
-    message_bits = bitarray(endian='big')
-    message_bits.frombytes(message)
     
     # Étape 3: Ajout du padding
     message_length = len(message_bits)  # Obtenez la longueur actuelle du message en bits
@@ -70,7 +67,7 @@ def keccak_f(state):
         state = rho(state)
         state = pi(state)
         state = chi(state)
-        state = iota(state, round_constants[round-1])
+        state = iota(state, round)
 
     return state
 
@@ -144,29 +141,27 @@ def chi(state):
 
     return state
 
-def iota(state, round_constant):
-   # Constants spécifiques à Keccak-256
-    row_count = 5
-    column_count = 5
+def iota(state, round):
 
-    state[0][0] ^= round_constant
+    state[0][0] ^= round_constants[round]
 
     return state
 
-def hash_file(file_path):
+def hash_file(file_path, output_file_path="output_hash.txt"):
     # Lire le contenu du fichier
     with open(file_path, 'rb') as file:
         file_content = file.read()
 
     # Appeler la fonction de hachage sur le contenu du fichier
     file_hash = keccak_256(file_content)
+
+    with open(output_file_path, 'w') as output_file:
+        output_file.write(file_hash.hex())
     
-    return file_hash
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python script.py <file_path>")
     else:
         file_path = sys.argv[1]
-        resulting_hash = hash_file(file_path)
-        print(resulting_hash)
+        hash_file(file_path)
