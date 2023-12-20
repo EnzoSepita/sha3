@@ -59,7 +59,9 @@ def calculate_padding(message_length):
 
 def state_xor(block, state):
     for i in range(len(block)):
-        row, col = divmod(i, 5)
+        row = i // 5
+        col = i % 5
+        row %= 5
         state[row][col] ^= block[i]
 
 def keccak_f(state):
@@ -68,7 +70,7 @@ def keccak_f(state):
         state = rho(state)
         state = pi(state)
         state = chi(state)
-        state = iota(state, round_constants[round])
+        state = iota(state, round_constants[round-1])
 
     return state
 
