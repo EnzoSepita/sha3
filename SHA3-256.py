@@ -11,9 +11,9 @@ round_constants = [
 ]
 
 def keccak_256(message_bits):
+    length = len(message_bits) * 8
     # Étape 1: Initialisation du tableau d'état
     state = [[0] * 5 for _ in range(5)]
-    print(state)
     
     # Étape 3: Ajout du padding
     message_length = len(message_bits)  # Obtenez la longueur actuelle du message en bits
@@ -22,6 +22,7 @@ def keccak_256(message_bits):
     
     # Étape 4: Absorption
     block_size = 1600
+    rate = block_size // 8
     for i in range(0, len(message_bits), block_size):
         block = message_bits[i:i+block_size]
     taille=len(block)
@@ -30,6 +31,20 @@ def keccak_256(message_bits):
     state_xor(block, state)
     keccak_f(state)
     
+    
+# Squeezing phase
+    hash_value = b''
+    while length > 0:
+        output = b''
+        for j in range(min(rate // 8, length // 8)):
+            chunk = state[j % 5][j // 5]
+            for _ in range(8):
+                output += bytes([chunk & 0xFF])
+                chunk >>= 8
+        hash_value += output[:length // 8]
+        length -= len(output) * 8
+        keccak_f(state)
+
     # Étape 6: Troncature
     hash_bits = bitarray()
     for row in state:
@@ -153,7 +168,7 @@ def hash_file(file_path, output_file_path="output_hash.txt"):
 
     # Appeler la fonction de hachage sur le contenu du fichier
     file_hash = keccak_256(file_content)
-    print(f"SHA3-256 ({file_path}) = {file_hash}")
+    print(f"SHA3-256 ({file_path}) = {file_hash.hex()}")
 
     with open(output_file_path, 'w') as output_file:
         output_file.write(file_hash.hex())
