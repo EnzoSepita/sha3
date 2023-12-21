@@ -1,6 +1,5 @@
 from bitarray import bitarray
 import sys
-from operator import xor
 
 round_constants = [
     0x0000000000000001,   0x0000000000008082,   0x800000000000808A,   0x8000000080008000,
@@ -154,6 +153,7 @@ def hash_file(file_path, output_file_path="output_hash.txt"):
 
     # Appeler la fonction de hachage sur le contenu du fichier
     file_hash = keccak_256(file_content)
+    print(f"SHA3-256 ({file_path}) = {file_hash}")
 
     with open(output_file_path, 'w') as output_file:
         output_file.write(file_hash.hex())
@@ -165,3 +165,4 @@ if __name__ == "__main__":
     else:
         file_path = sys.argv[1]
         hash_file(file_path)
+        
